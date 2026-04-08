@@ -1,82 +1,80 @@
-import { useState, useEffect } from "react";
-import places from "../data/places";
+import { useEffect, useState } from "react";
+import { getPlaces, bookPlace } from "../api/api";
 import Card from "../components/Card";
 import "../App.css";
 
 function TouristHome() {
-  const [search, setSearch] = useState("");
-  const [homes, setHomes] = useState([]);
+  const [places, setPlaces] = useState([]);
 
-  // LOAD DATA FROM LOCALSTORAGE AND LISTEN FOR CHANGES
   useEffect(() => {
-    // We wrap the loading logic in a function so we can reuse it
-    const loadHomes = () => {
-      const stored = JSON.parse(localStorage.getItem("homestays")) || [];
-      setHomes(stored);
-    };
-
-    // 1. Load data immediately when the component mounts
-    loadHomes();
-
-    // 2. Listen for changes to localStorage (triggers when updated from another tab)
-    window.addEventListener("storage", loadHomes);
-
-    // 3. Cleanup the event listener when the component unmounts
-    return () => {
-      window.removeEventListener("storage", loadHomes);
-    };
+    getPlaces()
+      .then(setPlaces)
+      .catch((err) => {
+        console.error("Failed to load places:", err);
+      });
   }, []);
 
-  // Make sure we only filter if 'location' actually exists to prevent crashes
-  const filteredHomes = homes.filter(h =>
-    h.location && h.location.toLowerCase().includes(search.toLowerCase())
-  );
+  // ✅ UPDATED BOOKING FUNCTION
+  const handleBooking = async (placeId, fromDate, toDate) => {
+    const user = JSON.parse(localStorage.getItem("user"));
 
-  const filteredPlaces = places.filter(p =>
-    p.location && p.location.toLowerCase().includes(search.toLowerCase())
-  );
+    if (!user || !user.id) {
+      alert("Please login first!");
+      return;
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+
+    // ❌ Prevent past booking
+    if (fromDate < today || toDate < today) {
+      alert("Cannot select past dates ❌");
+      return;
+    }
+
+    // ❌ Validate
+    if (!fromDate || !toDate) {
+      alert("Select both dates");
+      return;
+    }
+
+    if (fromDate > toDate) {
+      alert("Invalid date range ❌");
+      return;
+    }
+
+    const bookingData = {
+      userId: user.id,
+      placeId: placeId,
+      fromDate: fromDate,
+      toDate: toDate,
+      status: "pending",
+    };
+
+    console.log("Booking Data:", bookingData);
+
+    try {
+      const result = await bookPlace(bookingData);
+      console.log("Booking Success:", result);
+      alert("Booking Successful ✅");
+    } catch (err) {
+      console.error("Booking Failed:", err);
+      alert("Booking Failed ❌");
+    }
+  };
 
   return (
-    <div className="home-container">
+    <div>
+      <h2>Explore Places</h2>
 
-      {/* HERO */}
-      <div className="hero">
-        <h1>Plan Your Perfect Trip ✈️</h1>
-        <p>Search stays, explore destinations & book easily</p>
-
-        <div className="search-container">
-          <input
-            placeholder="Search destinations (Goa, Manali...)"
-            onChange={(e) => setSearch(e.target.value)}
+      <div className="grid">
+        {places.map((place) => (
+          <Card
+            key={place.id}
+            item={place}
+            onBook={handleBooking}
           />
-          <button className="search-btn">Search</button>
-        </div>
+        ))}
       </div>
-
-      {/* HOMESTAYS */}
-      <div className="section">
-        <h2>🏡 Popular Homestays</h2>
-        <div className="grid">
-          {filteredHomes.length > 0 ? (
-            filteredHomes.map(h => <Card key={h.id} item={h} />)
-          ) : (
-            <p className="empty">No stays found</p>
-          )}
-        </div>
-      </div>
-
-      {/* ATTRACTIONS */}
-      <div className="section">
-        <h2>📍 Nearby Attractions</h2>
-        <div className="grid">
-          {filteredPlaces.length > 0 ? (
-            filteredPlaces.map(p => <Card key={p.id} item={p} />)
-          ) : (
-            <p className="empty">No places found</p>
-          )}
-        </div>
-      </div>
-
     </div>
   );
 }
