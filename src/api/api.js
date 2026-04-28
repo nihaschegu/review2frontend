@@ -18,7 +18,9 @@ export const addPlace = async (data) => {
 };
 
 export const deletePlace = async (id) => {
-  const res = await fetch(`${BASE_URL}/places/${id}`, { method: "DELETE" });
+  const res = await fetch(`${BASE_URL}/places/${id}`, {
+    method: "DELETE",
+  });
   if (!res.ok) throw new Error("Failed to delete place");
 };
 
@@ -29,7 +31,7 @@ export const registerUser = async (data) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Failed to register user");
+  if (!res.ok) throw new Error("Failed to register");
   return res.json();
 };
 
@@ -50,13 +52,13 @@ export const bookPlace = async (data) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Booking API failed");
+  if (!res.ok) throw new Error("Booking failed");
   return res.json();
 };
 
 // ----------------- ADMIN -----------------
 export const getUserCount = async () => {
   const res = await fetch(`${BASE_URL}/users/count`);
-  if (!res.ok) throw new Error("Failed to fetch user count");
+  if (!res.ok) throw new Error("Failed to fetch count");
   return res.json();
 };

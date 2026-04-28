@@ -13,24 +13,31 @@ function Login() {
     try {
       const data = await loginUser({ email, password });
 
-      // ✅ store full user object (VERY IMPORTANT for booking)
-      localStorage.setItem("user", JSON.stringify(data));
+      console.log("Login response:", data); // ✅ debug
 
-      // optional (you can keep this for routing)
-      localStorage.setItem("role", data.role);
+      // ✅ store token
+      localStorage.setItem("token", data.token);
+
+      // ✅ store ONLY user object
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // ✅ get role correctly
+      const role = data.user?.role?.toLowerCase();
+
+      localStorage.setItem("role", role);
 
       // ✅ redirect based on role
-      if (data.role === "admin") {
+      if (role === "admin") {
         navigate("/admin");
-      } else if (data.role === "host") {
+      } else if (role === "host") {
         navigate("/host");
       } else {
-        navigate("/home");
+        navigate("/home"); // tourist
       }
 
-    } catch (error) {
+    } catch (err) {
       alert("Invalid credentials ❌");
-      console.error(error);
+      console.error(err);
     }
   };
 
@@ -54,7 +61,10 @@ function Login() {
 
       <button onClick={handleLogin}>Login</button>
 
-      <p onClick={() => navigate("/signup")} style={{ cursor: "pointer", color: "blue" }}>
+      <p
+        onClick={() => navigate("/signup")}
+        style={{ cursor: "pointer", color: "blue" }}
+      >
         Create account
       </p>
     </div>
