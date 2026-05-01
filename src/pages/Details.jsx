@@ -9,7 +9,10 @@ function Details() {
   return (
     <div>
       <h1>{state.name}</h1>
-      <img src={state.image} width="400" />
+
+      {/* ✅ FIXED alt */}
+      <img src={state.image} alt={state.name} width="400" />
+
       <p>{state.location}</p>
       <p>₹{state.price}</p>
     </div>

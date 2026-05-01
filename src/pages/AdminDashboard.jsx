@@ -26,7 +26,7 @@ function AdminDashboard() {
       .then(setUserCount)
       .catch((err) => console.error("User count error:", err));
 
-  }, []);
+  }, [navigate]); // ✅ FIXED
 
   const handleDelete = async (id) => {
     try {
@@ -41,7 +41,6 @@ function AdminDashboard() {
     <div className="container">
       <h2>Admin Dashboard</h2>
 
-      {/* ✅ USER COUNT CARD */}
       <div className="card">
         <h3>Total Users</h3>
         <p>{userCount}</p>
