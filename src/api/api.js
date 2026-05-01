@@ -1,64 +1,88 @@
-const BASE_URL = "http://localhost:8080/api";
+const BASE_URL = `${process.env.REACT_APP_API_URL}/api`;
+
+const headers = {
+  "Content-Type": "application/json",
+};
+
+const handleResponse = async (res) => {
+  let data = null;
+
+  try {
+    // try JSON first
+    data = await res.clone().json();
+  } catch {
+    try {
+      // fallback to text
+      data = await res.text();
+    } catch {
+      data = null;
+    }
+  }
+
+  if (!res.ok) {
+    const errorMessage =
+      (data && data.message) ||
+      (typeof data === "string" && data) ||
+      "Request failed (check backend)";
+    throw new Error(errorMessage);
+  }
+
+  return data;
+};
 
 // ----------------- PLACES -----------------
 export const getPlaces = async () => {
   const res = await fetch(`${BASE_URL}/places`);
-  if (!res.ok) throw new Error("Failed to fetch places");
-  return res.json();
+  return handleResponse(res);
 };
 
 export const addPlace = async (data) => {
   const res = await fetch(`${BASE_URL}/places`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Failed to add place");
-  return res.json();
+  return handleResponse(res);
 };
 
 export const deletePlace = async (id) => {
   const res = await fetch(`${BASE_URL}/places/${id}`, {
     method: "DELETE",
   });
-  if (!res.ok) throw new Error("Failed to delete place");
+  return handleResponse(res);
 };
 
 // ----------------- USERS -----------------
 export const registerUser = async (data) => {
   const res = await fetch(`${BASE_URL}/users/register`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Failed to register");
-  return res.json();
+  return handleResponse(res);
 };
 
 export const loginUser = async (data) => {
   const res = await fetch(`${BASE_URL}/users/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Invalid credentials");
-  return res.json();
+  return handleResponse(res);
 };
 
 // ----------------- BOOKINGS -----------------
 export const bookPlace = async (data) => {
   const res = await fetch(`${BASE_URL}/bookings`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error("Booking failed");
-  return res.json();
+  return handleResponse(res);
 };
 
 // ----------------- ADMIN -----------------
 export const getUserCount = async () => {
   const res = await fetch(`${BASE_URL}/users/count`);
-  if (!res.ok) throw new Error("Failed to fetch count");
-  return res.json();
+  return handleResponse(res);
 };
